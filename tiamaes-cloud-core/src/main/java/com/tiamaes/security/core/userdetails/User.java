@@ -1,6 +1,8 @@
 package com.tiamaes.security.core.userdetails;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,6 +30,9 @@ public class User implements UserDetails, CredentialsContainer {
 	public User(){
 	}
 	
+	public User(String username){
+		this(username, UUID.randomUUID().toString(), new ArrayList<DefaultGrantedAuthority>());
+	}
 	/**
 	 * Calls the more complex constructor with all boolean arguments set to
 	 * {@code true}.
