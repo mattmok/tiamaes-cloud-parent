@@ -11,12 +11,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tiamaes.cloud.exception.IllegalAccessException;
+import com.tiamaes.cloud.exception.IllegalArgumentException;
+import com.tiamaes.cloud.exception.IllegalStateException;
 
 public class CustomHandlerExceptionResolver implements HandlerExceptionResolver {
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(CustomHandlerExceptionResolver.class);
 
 	private ObjectMapper jacksonObjectMapper;
 
@@ -26,15 +28,17 @@ public class CustomHandlerExceptionResolver implements HandlerExceptionResolver 
 
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception exception) {
+		ModelAndView view = new ModelAndView();
 		int code = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 		String message = exception.getMessage();
-		if (exception instanceof IllegalArgumentException || exception instanceof IllegalAccessException
-				|| exception instanceof IllegalStateException) {
+		if (exception instanceof IllegalArgumentException || exception instanceof IllegalStateException) {
 			code = HttpServletResponse.SC_BAD_REQUEST;
 			message = exception.getMessage();
-		} else if (exception instanceof NoHandlerFoundException) {
-			logger.error(exception.getMessage(), exception);
+		} else if (exception instanceof IllegalAccessException) {
+			code = HttpServletResponse.SC_UNAUTHORIZED;
+			message = exception.getMessage();
 		} else {
+			view = null;
 			logger.error(exception.getMessage(), exception);
 			message = "服务异常，请稍后重试...";
 		}
@@ -62,6 +66,6 @@ public class CustomHandlerExceptionResolver implements HandlerExceptionResolver 
 				writer.close();
 			}
 		}
-		return null;
+		return view;
 	}
 }
