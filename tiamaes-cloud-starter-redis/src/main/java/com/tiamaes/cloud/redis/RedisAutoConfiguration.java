@@ -22,8 +22,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.tiamaes.cloud.redis.factory.RedisMessageListenerFactory;
 import com.tiamaes.cloud.redis.listener.KeyExpiredEventMessageListener;
@@ -45,6 +47,8 @@ public class RedisAutoConfiguration {
 			logger.debug("Overriding bean definition for bean 'objectMapper' with a different definition");
 		}
 		ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+		objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		objectMapper.enableDefaultTyping(DefaultTyping.NON_FINAL, As.PROPERTY);
 		return objectMapper;
 	}

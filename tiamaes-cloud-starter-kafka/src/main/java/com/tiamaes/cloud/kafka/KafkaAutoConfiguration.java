@@ -18,8 +18,10 @@ import org.springframework.kafka.listener.adapter.RecordFilterStrategy;
 import org.springframework.kafka.support.ProducerListener;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 
 @EnableKafka
@@ -35,6 +37,8 @@ public class KafkaAutoConfiguration {
 	@ConditionalOnMissingBean
 	public ObjectMapper objectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		objectMapper.enableDefaultTyping(DefaultTyping.NON_FINAL, As.PROPERTY);
 		return objectMapper;
 	}

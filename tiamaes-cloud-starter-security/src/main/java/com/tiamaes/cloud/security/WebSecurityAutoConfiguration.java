@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -44,9 +45,11 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.tiamaes.cloud.security.execption.CustomHandlerExceptionResolver;
 import com.tiamaes.cloud.security.provisioning.InMemoryUserManagerConfigurer;
 import com.tiamaes.security.core.DefaultGrantedAuthority;
@@ -55,10 +58,23 @@ import com.tiamaes.security.core.userdetails.User;
 @Configuration
 @AutoConfigureAfter({ JacksonAutoConfiguration.class, SecurityAutoConfiguration.class })
 @ConditionalOnClass({ AuthenticationManager.class, GlobalAuthenticationConfigurerAdapter.class })
-public class WebSecurityAutoConfiguration {
-	private static Logger logger = LogManager.getLogger();
+public class WebSecurityAutoConfiguration implements InitializingBean {
+	private static Logger logger = LogManager.getLogger(WebSecurityAutoConfiguration.class);
 
+	@Autowired
+	@Qualifier("jacksonObjectMapper")
+	private ObjectMapper jacksonObjectMapper;
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(jacksonObjectMapper != null){
+			jacksonObjectMapper.disable(SerializationFeature.INDENT_OUTPUT);
+			jacksonObjectMapper.setSerializationInclusion(Include.NON_NULL);
+		}
+	}
+	
 	@Bean
+	@ConditionalOnMissingBean
 	protected PasswordEncoder passwordEncoder() {
 		return new StandardPasswordEncoder();
 	}
@@ -67,29 +83,19 @@ public class WebSecurityAutoConfiguration {
 	@ConditionalOnMissingBean(name = "objectMapper")
 	public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
 		ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+		objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		objectMapper.enableDefaultTyping(DefaultTyping.NON_FINAL, As.PROPERTY);
 		return objectMapper;
 	}
 
-	@Bean(name = "jacksonObjectMapper")
-	@ConditionalOnMissingBean(name = "jacksonObjectMapper")
-	public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder) {
-		ObjectMapper jsonObjectMapper = builder.createXmlMapper(false).build();
-		if (logger.isDebugEnabled()) {
-			logger.debug("Mvc required 'ObjectMapper' has been created..");
-		}
-		return jsonObjectMapper;
-	}
-
 	@Bean
-	public HandlerExceptionResolver handlerExceptionResolver(
-			@Qualifier("jacksonObjectMapper") ObjectMapper jacksonObjectMapper) {
+	public HandlerExceptionResolver handlerExceptionResolver() {
 		return new CustomHandlerExceptionResolver(jacksonObjectMapper);
 	}
 
 	@Bean
-	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(
-			@Qualifier("jacksonObjectMapper") ObjectMapper jacksonObjectMapper) {
+	public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(jacksonObjectMapper);
 		List<MediaType> supportedMediaTypes = new ArrayList<MediaType>();
 		supportedMediaTypes.add(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -132,9 +138,6 @@ public class WebSecurityAutoConfiguration {
 
 	@Configuration
 	public class MvcConfig extends WebMvcConfigurerAdapter {
-
-		@Resource
-		private ObjectMapper jacksonObjectMapper;
 		@Resource
 		private HandlerExceptionResolver handlerExceptionResolver;
 		@Resource
