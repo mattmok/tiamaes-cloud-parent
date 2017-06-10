@@ -19,6 +19,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
@@ -54,28 +55,35 @@ public class RedisAutoConfiguration {
 	}
 
 	@Bean
-	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory,
+			@Qualifier("objectMapper") ObjectMapper objectMapper) {
+		RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 		StringRedisTemplate template = new StringRedisTemplate();
 		template.setConnectionFactory(redisConnectionFactory);
+		template.setDefaultSerializer(new StringRedisSerializer());
+		template.setValueSerializer(serializer);
+		template.setHashValueSerializer(serializer);
 		template.setEnableTransactionSupport(false);
 		return template;
 	}
 
 	@Bean
-	public RedisTemplate<String, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory,
+	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory,
 			@Qualifier("objectMapper") ObjectMapper objectMapper) {
-		RedisTemplate<String, ?> redisTemplate = new RedisTemplate<>();
+		RedisSerializer<?> serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+		RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 		redisTemplate.setConnectionFactory(redisConnectionFactory);
 		redisTemplate.setDefaultSerializer(new StringRedisSerializer());
-		redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+		redisTemplate.setValueSerializer(serializer);
+		redisTemplate.setHashValueSerializer(serializer);
 		redisTemplate.setEnableTransactionSupport(false);
 		return redisTemplate;
 	}
 
 	@Configuration
 	@ConditionalOnExpression("!'${spring.redis.host:}'.isEmpty()")
-	public static class RedisStandAloneAutoConfiguration{
-		
+	public static class RedisStandAloneAutoConfiguration {
+
 		@Bean
 		@ConditionalOnBean(RedisKeyExpiredListener.class)
 		public RedisMessageListenerContainer customizeRedisListenerContainer(
@@ -96,15 +104,15 @@ public class RedisAutoConfiguration {
 			return listener;
 		}
 	}
-	
-	
+
 	@Configuration
 	@ConditionalOnExpression("!'${spring.redis.cluster.nodes:}'.isEmpty()")
-	public static class RedisClusterAutoConfiguration{
-		
+	public static class RedisClusterAutoConfiguration {
+
 		@Bean
 		@ConditionalOnBean(RedisKeyExpiredListener.class)
-		public RedisMessageListenerFactory redisMessageListenerFactory(BeanFactory beanFactory, RedisConnectionFactory redisConnectionFactory, RedisKeyExpiredListener publisher){
+		public RedisMessageListenerFactory redisMessageListenerFactory(BeanFactory beanFactory,
+				RedisConnectionFactory redisConnectionFactory, RedisKeyExpiredListener publisher) {
 			RedisMessageListenerFactory beans = new RedisMessageListenerFactory();
 			beans.setBeanFactory(beanFactory);
 			beans.setRedisKeyExpiredListener(publisher);
