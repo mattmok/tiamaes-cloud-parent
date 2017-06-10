@@ -118,6 +118,6 @@ public class Swagger2AutoConfiguration {
 				documentationCache.addDocumentation(documentation);
 			});
 		}
-		return new InMemorySwaggerResourcesProvider(documentationCache);
+		return new InMemorySwaggerResourcesProvider(documentationCache, swagger2Properties);
 	}
 }

@@ -7,8 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Optional;
 
 import springfox.documentation.service.Documentation;
@@ -22,12 +20,14 @@ public class InMemorySwaggerResourcesProvider implements SwaggerResourcesProvide
 	private boolean swagger2Available;
 
 	private final DocumentationCache documentationCache;
+	
+	private String path;
 
-	@Autowired
-	public InMemorySwaggerResourcesProvider(DocumentationCache documentationCache) {
+	public InMemorySwaggerResourcesProvider(DocumentationCache documentationCache, Swagger2Properties swagger2Properties) {
 		swagger1Available = classByName("springfox.documentation.swagger1.web.Swagger1Controller").isPresent();
 		swagger2Available = classByName("springfox.documentation.swagger2.web.Swagger2Controller").isPresent();
 		this.documentationCache = documentationCache;
+		this.path = swagger2Properties.getPath();
 	}
 
 	@Override
@@ -37,13 +37,13 @@ public class InMemorySwaggerResourcesProvider implements SwaggerResourcesProvide
 		for (Map.Entry<String, Documentation> entry : documentationCache.all().entrySet()) {
 			String swaggerGroup = entry.getKey();
 			if (swagger1Available) {
-				SwaggerResource swaggerResource = resource(swaggerGroup, "/api-docs");
+				SwaggerResource swaggerResource = resource(swaggerGroup, path);
 				swaggerResource.setSwaggerVersion("1.2");
 				resources.add(swaggerResource);
 			}
 
 			if (swagger2Available) {
-				SwaggerResource swaggerResource = resource(swaggerGroup, "/api-docs");
+				SwaggerResource swaggerResource = resource(swaggerGroup, path);
 				swaggerResource.setSwaggerVersion("2.0");
 				resources.add(swaggerResource);
 			}

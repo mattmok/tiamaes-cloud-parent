@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class Swagger2Properties {
 
 	private boolean enabled = false;
+	private String path = "/api-docs";
 	private Info info = new Info();
 
 	public boolean isEnabled() {
@@ -16,6 +17,14 @@ public class Swagger2Properties {
 		this.enabled = enabled;
 	}
 
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
 	public Info getInfo() {
 		return info;
 	}
@@ -24,12 +33,11 @@ public class Swagger2Properties {
 		this.info = info;
 	}
 
-
 	public static class Info {
 		private String title = "Api Documents";
 		private String description;
 		private String version;
-		
+
 		private Contact contact = new Contact();
 
 		public String getTitle() {
@@ -55,7 +63,7 @@ public class Swagger2Properties {
 		public void setVersion(String version) {
 			this.version = version;
 		}
-		
+
 		public Contact getContact() {
 			return contact;
 		}
@@ -63,26 +71,32 @@ public class Swagger2Properties {
 		public void setContact(Contact contact) {
 			this.contact = contact;
 		}
-		
-		public static class Contact{
+
+		public static class Contact {
 			private String name = "tiamaes";
 			private String url;
 			private String email;
+
 			public String getName() {
 				return name;
 			}
+
 			public void setName(String name) {
 				this.name = name;
 			}
+
 			public String getUrl() {
 				return url;
 			}
+
 			public void setUrl(String url) {
 				this.url = url;
 			}
+
 			public String getEmail() {
 				return email;
 			}
+
 			public void setEmail(String email) {
 				this.email = email;
 			}
