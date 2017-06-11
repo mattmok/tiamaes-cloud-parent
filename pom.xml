@@ -28,7 +28,7 @@
 		<druid.version>1.0.24</druid.version>
 		<quartz.version>2.2.2</quartz.version>
 		<groovy.version>2.4.9</groovy.version>
-		<ojdbc.version>11.2.0.4.0</ojdbc.version>
+		<ojdbc.version>11.2.0.3</ojdbc.version>
 		<netty.version>4.0.27.Final</netty.version>
 		<springfox.version>2.6.1</springfox.version>
 		<spring.mybatis.version>1.1.1</spring.mybatis.version>
