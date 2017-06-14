@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -34,7 +35,7 @@ public class CustomHandlerExceptionResolver implements HandlerExceptionResolver 
 		if (exception instanceof IllegalArgumentException || exception instanceof IllegalStateException) {
 			code = HttpServletResponse.SC_BAD_REQUEST;
 			message = exception.getMessage();
-		} else if (exception instanceof IllegalAccessException) {
+		} else if (exception instanceof IllegalAccessException || exception instanceof AccessDeniedException) {
 			code = HttpServletResponse.SC_UNAUTHORIZED;
 			message = exception.getMessage();
 		} else {

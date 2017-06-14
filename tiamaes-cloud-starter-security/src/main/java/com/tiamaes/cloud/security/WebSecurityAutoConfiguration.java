@@ -176,7 +176,7 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 	}
 
 	@Configuration
-	@EnableGlobalMethodSecurity(prePostEnabled = true)
+	@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 	@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 	public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 

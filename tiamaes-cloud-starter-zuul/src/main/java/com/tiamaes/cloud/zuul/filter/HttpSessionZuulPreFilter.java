@@ -2,8 +2,9 @@ package com.tiamaes.cloud.zuul.filter;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
 import org.springframework.session.Session;
 import org.springframework.session.data.redis.RedisOperationsSessionRepository;
 
@@ -11,7 +12,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
 public class HttpSessionZuulPreFilter extends ZuulFilter {
-	private static Logger logger = LogManager.getLogger();
+	private static final Logger logger = LoggerFactory.getLogger(HttpSessionZuulPreFilter.class);
 	
 	private RedisOperationsSessionRepository repository;
 	public HttpSessionZuulPreFilter(RedisOperationsSessionRepository repository) {
@@ -38,7 +39,7 @@ public class HttpSessionZuulPreFilter extends ZuulFilter {
 
 	@Override
 	public String filterType() {
-		return "pre";
+		return FilterConstants.PRE_TYPE;
 	}
 
 	@Override
