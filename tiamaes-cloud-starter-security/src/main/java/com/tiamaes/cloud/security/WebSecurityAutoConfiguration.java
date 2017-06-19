@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.security.SecurityProperties.Basic;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -33,9 +34,12 @@ import org.springframework.security.config.annotation.authentication.configurers
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.util.Assert;
@@ -135,7 +139,7 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 				users);
 		return configurer.getUserDetailsService();
 	}
-
+	
 	@Configuration
 	public class MvcConfig extends WebMvcConfigurerAdapter {
 		@Resource
@@ -176,6 +180,7 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 	}
 
 	@Configuration
+	@EnableConfigurationProperties(SecurityFormProperties.class)
 	@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 	@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 	public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -186,6 +191,12 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 		private UserDetailsService userDetailsService;
 		@Autowired
 		private SecurityProperties securityProperties;
+		@Autowired
+		private SecurityFormProperties securityFormProperties;
+		@Autowired(required = false)
+		private AuthenticationSuccessHandler successHandler;
+		@Autowired(required = false)
+		private AuthenticationFailureHandler failureHandler;
 
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
@@ -201,6 +212,23 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 				http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
 			} else {
 				http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).disable();
+			}
+			
+			if(securityFormProperties.isEnabled()){
+				FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin()
+	            	.loginPage(securityFormProperties.getLoginPage())
+	            	.loginProcessingUrl(securityFormProperties.getLoginProcessingUrl())
+	            	.usernameParameter(securityFormProperties.getParameters().getUsername())
+	            	.passwordParameter(securityFormProperties.getParameters().getPassword())
+	            	.defaultSuccessUrl(securityFormProperties.getDefaultSuccessUrl())
+	            	.permitAll();
+				
+				if(successHandler != null){
+					formLogin.successHandler(successHandler);
+				}
+				if(failureHandler != null){
+					formLogin.failureHandler(failureHandler);
+				}
 			}
 		}
 
