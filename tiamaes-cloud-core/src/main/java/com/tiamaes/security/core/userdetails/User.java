@@ -1,6 +1,6 @@
 package com.tiamaes.security.core.userdetails;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,6 +13,8 @@ import com.tiamaes.security.core.DefaultGrantedAuthority;
 public class User implements UserDetails, CredentialsContainer {
 
 	private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
+	
+	private static final DefaultGrantedAuthority defaultGrantedAuthority = new DefaultGrantedAuthority("ROLE_USER");
 
 	// ~ Instance fields
 	// ================================================================================================
@@ -31,7 +33,7 @@ public class User implements UserDetails, CredentialsContainer {
 	}
 	
 	public User(String username){
-		this(username, UUID.randomUUID().toString(), new ArrayList<DefaultGrantedAuthority>());
+		this(username, UUID.randomUUID().toString(), null);
 	}
 	/**
 	 * Calls the more complex constructor with all boolean arguments set to
@@ -86,6 +88,13 @@ public class User implements UserDetails, CredentialsContainer {
 		this.accountNonExpired = accountNonExpired;
 		this.credentialsNonExpired = credentialsNonExpired;
 		this.accountNonLocked = accountNonLocked;
+		if(authorities == null){
+			authorities = Arrays.asList(defaultGrantedAuthority);
+		}else if(authorities != null){
+			if(authorities.size() == 0 || (authorities.size() > 0 && !authorities.contains(defaultGrantedAuthority))){
+				authorities.add(defaultGrantedAuthority);
+			}
+		}
 		this.authorities = authorities;
 	}
 
