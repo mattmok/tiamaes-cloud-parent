@@ -42,6 +42,7 @@
 		<spring.data.keyvalue.version>1.1.0.RELEASE</spring.data.keyvalue.version>
 		<spring.integration.core.version>4.3.4.RELEASE</spring.integration.core.version>
 		<spring.integration.kafka.version>2.1.0.RELEASE</spring.integration.kafka.version>
+		<thymeleaf-extras-springsecurity4.version>3.0.2.RELEASE</thymeleaf-extras-springsecurity4.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

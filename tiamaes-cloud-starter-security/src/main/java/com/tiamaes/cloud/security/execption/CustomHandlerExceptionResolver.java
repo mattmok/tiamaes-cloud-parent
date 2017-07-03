@@ -37,7 +37,7 @@ public class CustomHandlerExceptionResolver implements HandlerExceptionResolver 
 			message = exception.getMessage();
 		} else if (exception instanceof IllegalAccessException || exception instanceof AccessDeniedException) {
 			code = HttpServletResponse.SC_UNAUTHORIZED;
-			message = exception.getMessage();
+			message = "当前用户没有权限进行该操作!";
 		} else {
 			view = null;
 			logger.error(exception.getMessage(), exception);
