@@ -7,11 +7,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.actuate.autoconfigure.ManagementServerProperties;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -27,7 +29,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.annotation.Order;
+import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -42,6 +44,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -72,7 +75,7 @@ import com.tiamaes.security.core.userdetails.User;
 @AutoConfigureAfter({ JacksonAutoConfiguration.class, SecurityAutoConfiguration.class })
 @ConditionalOnClass({ AuthenticationManager.class, GlobalAuthenticationConfigurerAdapter.class })
 public class WebSecurityAutoConfiguration implements InitializingBean {
-	private static Logger logger = LogManager.getLogger(WebSecurityAutoConfiguration.class);
+	private static Logger logger = LoggerFactory.getLogger(WebSecurityAutoConfiguration.class);
 
 	@Autowired
 	@Qualifier("jacksonObjectMapper")
@@ -211,12 +214,23 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 		}
 	}
 	
-
+	/**
+	 * https://github.com/spring-projects/spring-security-oauth/issues/789 
+	 *
+	 * In general you might have to configure the request matchers for the app (i.e. /login, /oauth/* etc.) and the resources (/me etc.).
+	 * By default the resource server has a matcher for everything except /oauth/*, but you have added a WebSecurityConfigurerAdapter with 
+	 * default order, which matches all requests, and hence your resource server filter chain is never used. You could change the order of
+	 * your custom one (or since it is not explicitly configureing HTTP security, just remove it).
+	 * 
+	 * @author Chen
+	 *
+	 */
 	@Configuration
 	@EnableConfigurationProperties(com.tiamaes.cloud.security.SecurityProperties.class)
 	@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-	@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
-	public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
+	public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter implements Ordered{
+		@Autowired
+		protected ObjectProvider<AuthorizationServerEndpointsConfiguration> authorizationServerEndpoints;
 
 		@Autowired
 		protected PasswordEncoder passwordEncoder;
@@ -244,21 +258,23 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 			} else {
 				http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).disable();
 			}
-			
-			if(securityProperties instanceof SecurityProperties){
-				Form from = ((com.tiamaes.cloud.security.SecurityProperties)securityProperties).getForm();
+
+			if (securityProperties instanceof SecurityProperties) {
+				Form from = ((com.tiamaes.cloud.security.SecurityProperties) securityProperties).getForm();
+				//@formatter:off
 				if(from.isEnabled()){
 					http.formLogin()
-					.loginPage(from.getLoginPage())
-					.loginProcessingUrl(from.getLoginProcessingUrl())
-					.usernameParameter(from.getParameters().getUsername())
-					.passwordParameter(from.getParameters().getPassword())
-					.defaultSuccessUrl(from.getDefaultSuccessUrl())
-					.successHandler(successHandler)
-					.failureHandler(failureHandler)
-					.permitAll();
+						.loginPage(from.getLoginPage())
+						.loginProcessingUrl(from.getLoginProcessingUrl())
+						.usernameParameter(from.getParameters().getUsername())
+						.passwordParameter(from.getParameters().getPassword())
+						.defaultSuccessUrl(from.getDefaultSuccessUrl())
+						.successHandler(successHandler)
+						.failureHandler(failureHandler)
+						.permitAll();
 					http.logout().logoutUrl("/logout").logoutSuccessUrl("/login.html").deleteCookies("SESSION", "JSESSIONID");
 				}
+				//@formatter:on
 			}
 		}
 
@@ -269,6 +285,15 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 			provider.setUserDetailsService(userDetailsService);
 			auth.authenticationProvider(provider);
 			super.configure(auth);
+		}
+
+		@Override
+		public int getOrder() {
+			int i = SecurityProperties.ACCESS_OVERRIDE_ORDER;
+			if(authorizationServerEndpoints.getIfAvailable() != null){
+				i = ManagementServerProperties.ACCESS_OVERRIDE_ORDER;
+			}
+			return i;
 		}
 	}
 	

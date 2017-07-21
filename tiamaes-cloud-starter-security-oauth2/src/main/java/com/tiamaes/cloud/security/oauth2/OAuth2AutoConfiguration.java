@@ -26,11 +26,6 @@ import org.springframework.security.oauth2.provider.code.AuthorizationCodeServic
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import com.netflix.config.ConfigurationManager;
-import com.netflix.hystrix.HystrixCommandProperties.ExecutionIsolationStrategy;
 
 import feign.RequestInterceptor;
 
@@ -43,11 +38,11 @@ public class OAuth2AutoConfiguration {
 	public class OAuth2AuthorizationServer extends AuthorizationServerConfigurerAdapter {
 
 		@Autowired
-		private AuthenticationManager authenticationManager;
-		@Autowired
 		private DataSource dataSource;
 		@Autowired
 		private PasswordEncoder passwordEncoder;
+		@Autowired
+		private AuthenticationManager authenticationManager;
 
 		@Bean
 		@ConditionalOnMissingBean
@@ -80,16 +75,20 @@ public class OAuth2AutoConfiguration {
 			oauthServer.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
 		}
 
-		
-		@Configuration
-		public class MvcConfig extends WebMvcConfigurerAdapter{
-
-			@Override
-			public void addViewControllers(ViewControllerRegistry registry) {
-				registry.addViewController("/oauth/confirm_access").setViewName("authorize");
-			}
-		}
 	}
+	
+	
+	
+//	@Configuration
+//	@SessionAttributes("authorizationRequest")
+//	@ConditionalOnBean(AuthorizationServerEndpointsConfiguration.class)
+//	public static class OAuth2MvcConfigurer extends WebMvcConfigurerAdapter{
+//
+//		@Override
+//		public void addViewControllers(ViewControllerRegistry registry) {
+//			registry.addViewController("/oauth/confirm_access").setViewName("authorize");
+//		}
+//	}
 
 	@Configuration
 	@ConditionalOnClass(RequestInterceptor.class)
@@ -97,8 +96,6 @@ public class OAuth2AutoConfiguration {
 
 		@Bean
 		public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oAuth2ClientContext, OAuth2ProtectedResourceDetails resource) {
-			ConfigurationManager.getConfigInstance()
-				.setProperty("hystrix.command.default.execution.isolation.strategy", ExecutionIsolationStrategy.SEMAPHORE);
 			return new OAuth2FeignRequestInterceptor(oAuth2ClientContext, resource);
 		}
 	}
