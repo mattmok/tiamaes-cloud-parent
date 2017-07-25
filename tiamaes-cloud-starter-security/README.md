@@ -1,6 +1,6 @@
 # tiamaes-cloud-starter-security
 # 1.Overview
-该项目是对spring security 和spring mvc的基础整合，并进行了一部分的自动配置和改动，以方便集成到我们自己的项目中去，具体用法请参考官方文档。  
+该项目是对spring security 和spring boot的基础整合，并进行了一部分的自动配置和改动，以方便集成到我们自己的项目中去，具体用法请参考官方文档。  
 
 在身份验证层，Spring Security的支持多种认证模式。这些验证模型绝大多数都是要么由第三方提供，或由相关的标准组织，如互联网工程任务组开发。另外 Spring Security 提供自己的一组认证功能。具体而言，Spring Security目前支持所有这些技术集成的身份验证：
 
