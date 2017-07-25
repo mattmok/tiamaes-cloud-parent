@@ -229,9 +229,9 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 	@EnableConfigurationProperties(com.tiamaes.cloud.security.SecurityProperties.class)
 	@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 	public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter implements Ordered{
+		
 		@Autowired
 		protected ObjectProvider<AuthorizationServerEndpointsConfiguration> authorizationServerEndpoints;
-
 		@Autowired
 		protected PasswordEncoder passwordEncoder;
 		@Autowired

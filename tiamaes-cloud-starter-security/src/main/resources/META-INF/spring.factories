@@ -1,3 +1,4 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.tiamaes.cloud.security.WebSecurityAutoConfiguration
+com.tiamaes.cloud.security.WebSecurityAutoConfiguration,\
+com.tiamaes.cloud.security.oauth2.OAuth2AutoConfiguration
