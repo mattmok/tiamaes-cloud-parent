@@ -223,7 +223,6 @@
 		<module>tiamaes-cloud-dependencies</module>
 		<module>tiamaes-cloud-starter-logger</module>
 		<module>tiamaes-cloud-starter-security</module>
-		<module>tiamaes-cloud-starter-security-oauth2</module>
 		<module>tiamaes-cloud-starter-swagger2</module>
 		<module>tiamaes-cloud-starter-kafka</module>
 		<module>tiamaes-cloud-starter-jpush</module>
