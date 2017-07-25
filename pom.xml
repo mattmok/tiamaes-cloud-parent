@@ -8,7 +8,7 @@
 	</parent>
 	<groupId>com.tiamaes.cloud</groupId>
 	<artifactId>tiamaes-cloud-parent</artifactId>
-	<version>1.0.7-SNAPSHOT</version>
+	<version>1.0.7.RELEASE</version>
 	<packaging>pom</packaging>
 	<name>tiamaes-cloud-parent</name>
 
