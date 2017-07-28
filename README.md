@@ -15,8 +15,6 @@
 <pre>*该模块只用来进行依赖管理，只需要在 your-project-parent pom.xml中引用即可，不需要单独引入该依赖*</pre>
 ##### 3. tiamaes-cloud-starter-security
 将该模块引入项目中之后，默认开启spring mvc和spring-security支持，提供权限认证支持
-##### 4. tiamaes-cloud-starter-security-oauth2
-将该模块引入项目中之后，默认开启spring-security-oauth2模块，提供OAuth2支持
 ##### 5. tiamaes-cloud-starter-swagger2
 将该模块引入项目中之后，默认开启springfox-swagger2模块，提供接口文档服务
 ##### 6. [tiamaes-cloud-starter-zuul](tiamaes-cloud-starter-zuul/README.md)

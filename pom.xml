@@ -33,6 +33,7 @@
 		<springfox.version>2.6.1</springfox.version>
 		<thymeleaf.version>3.0.6.RELEASE</thymeleaf.version>
 		<spring.mybatis.version>1.1.1</spring.mybatis.version>
+		<spring.cloud.version>Dalston.SR1</spring.cloud.version>
 		<spring.kafka.version>1.1.1.RELEASE</spring.kafka.version>
 		<spring.redis.version>1.7.4.RELEASE</spring.redis.version>
 		<sprin.mongodb.version>1.9.4.RELEASE</sprin.mongodb.version>
@@ -85,7 +86,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>Dalston.SR1</version>
+				<version>${spring.cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

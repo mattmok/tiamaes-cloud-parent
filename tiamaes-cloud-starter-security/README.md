@@ -21,17 +21,36 @@
 #####15.Java Open Source Single Sign On (JOSSO)
 # 2.Quick Start
 ##### 1.Dependencies
+	<parent>
+		<groupId>com.tiamaes.cloud</groupId>
+		<artifactId>tiamaes-cloud-parent</artifactId>
+		<version>1.0.7.RELEASE</version>
+	</parent>
+	<artifactId>tiamaes-cloud-example-security</artifactId>
+	<version>1.0.0</version>
+	
+	<properties>
+		<start-class>com.tiamaes.cloud.Application</start-class>
+	</properties>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.tiamaes.cloud</groupId>
+				<artifactId>tiamaes-cloud-dependencies</artifactId>
+				<version>1.0.7.RELEASE</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.tiamaes.cloud</groupId>
 			<artifactId>tiamaes-cloud-starter-security</artifactId>
 		</dependency>
 	</dependencies>
-##### 2.Configure
-	security:
-	  ignored: /css/**,/js/**,/images/**,/webjars/**,**/favicon.ico
-	  basic:
-	    enabled: false
 ##### 3.code
 	@SpringBootApplication
 	public class Application{
@@ -39,13 +58,23 @@
 			SpringApplication.run(Application.class, args);
 		}
 	}
+##### 2.Configure
+	security:
+	  basic:
+	    enabled: true
 # 3.Usage
 #####1.主要配置
-######1.1	 忽略路径
+######1.1 设置端口
+	server:
+	  port: 8080
+######1.2 设置根目录
+	server:
+	  context-path: /security
+######1.3	 忽略路径
 	security.ignored: /css/**,/js/**,/images/**,/webjars/**,**/favicon.ico
 security默认会将以上路径设置为忽略，即不对以上目录或文件添加权限控制。
-######1.2 basic认证
-	security.basic.enabled: false
+######1.4 basic认证
+	security.basic.enabled: true
 默认启用basic认证，设置为false时关闭basic认证，默认用户名为user,密码参见项目中启动时打印日志。  
 
 	eg: Using default security password: c61c806d-0fc1-4b23-9a80-8b3fca61be83
@@ -70,7 +99,7 @@ security默认会将以上路径设置为忽略，即不对以上目录或文件
 			}
 		};
 	}
-######1.3.表单认证
+######1.5 表单认证
 开启认证时，则需要根据实际情况覆盖以下配置：  
 
 	security:
@@ -106,7 +135,7 @@ security默认会将以上路径设置为忽略，即不对以上目录或文件
 			}
 		};
 	}
-#####2.使用自定义的密码解释器
+######1.6 使用自定义的密码解释器
 项目中使用了	StandardPasswordEncoder，如果你想要实现自己的PasswordEncoder，需要在配置文件中注入：  
 
 	@Bean
@@ -124,37 +153,146 @@ security默认会将以上路径设置为忽略，即不对以上目录或文件
 			}
 		};
 	}
-#####3.序列化方法
-当前项目中使用jackson进行序列化和反序列化，在项目中已经配置了两个不同的ObjectMapper:
+#####2.静态资源位置
+	src/main/resources/META-INF/resources
+	src/main/resources/resources
+	src/main/resources/static
+	src/main/resources/public
+#####3.使用控制器
+	@Controller
+	@RestController = @ResponseBody ＋ @Controller //InternalResourceViewResolver失效
+	
+	@GetMapping = @RequestMapping(method = RequestMethod.GET)
+	@PostMapping = @RequestMapping(method = RequestMethod.POST)
+	@PutMapping = @RequestMapping(method = RequestMethod.PUT)
+	@DeleteMapping = @RequestMapping(method = RequestMethod.DELETE)
+	
+	
+######3.1 使用@CurrentUser在获取当前登陆用户的基础信息
+
+	@Controller
+	public class DefaultController{
+	
+		@GetMapping({"/", "/index.html"})
+		public String index(@CurrentUser User user, Model model){
+			model.addAttribute("user", user);
+			return "index.html";
+		}
+	}
+######3.2 使用jackson2序列化对象	
 
 	@Autowired
 	@Qualifier("objectMapper")
-	private ObjectMapper objectMapper;
+	private ObjectMapper objectMapper;	//当要序列化的对象是程序或组件使用时，请使用objectMapper进行序列化
 	
 	@Autowired
 	@Qualifier("jacksonObjectMapper")
-	private ObjectMapper jacksonObjectMapper;
+	private ObjectMapper jacksonObjectMapper; //当序列化的对象是用户使用时，请使用jacksonObjectMapper进行序列化
 	
 其中，objectMapper由于使用了以下配置项:
 
 	objectMapper.enableDefaultTyping(DefaultTyping.NON_FINAL, As.PROPERTY);
 	
 会导致序列化的字符串结果中会包含@class字段，这种方式更有利于我们以编程方式进行对象的序列化和反序列化。因此，在进行类似kafka、redis等操作时，请注入objectMapper。
-使用原则为：
-######3.1.当对象是程序或组件使用时，请使用objectMapper进行序列化
-######3.1.当对象是用户使用时，请使用jacksonObjectMapper进行序列化
-	
-#####4.权限配置
+#####4.异常处理
+######4.1	 使用断言com.tiamaes.cloud.util.Assert
+	Assert.notNull(clazz, "The class must not be null");
+	Assert.notEmpty(collection, "Collection must contain elements");
+	Assert.state(id == null, "The id property must not already be initialized");
+######4.2 使用异常
+	com.tiamaes.cloud.exception.IllegalAccessException
+	com.tiamaes.cloud.exception.IllegalArgumentException
+	com.tiamaes.cloud.exception.IllegalStateException	
+#####5.权限配置
 默认开启了@prePostEnabled和@securedEnabled支持。
-######4.1	 @Secured
+######5.1	 @Secured
 
-	@Secured("ADMIN")	//允许拥有ADMIN角色的角户访问
-######4.2 @PreAuthorize
+	@Secured("ROLE_ADMIN")	//允许拥有ADMIN角色的角户访问
+######5.2 @PreAuthorize
 
 	@PreAuthorize("hasRole('ADMIN') OR hasRole('USER')")	//允许拥有ADMIN或USER角色的用户访问
 	@PreAuthorize("hasRole('ADMIN') AND hasRole('USER')")	//允许同时拥有ADMIN和USER角色的用户访问
 	
+#####6.模板引擎
+默认引用spring boot推荐使用的thymeleaf模板引擎。
 
+	<html xmlns:th="http://www.thymeleaf.org">
+
+######6.1 字符串替换
+
+	<p th:text="'Hello, ' + ${name} + '!'">Hello, world!</p>
+	<p th:text="|Hello, ${name}!|">Hello, world!</p>
+
+######6.2 URL替换
+
+	<a href="#" th:href="@{http://www.baidu.com}">百度</a>
+	<a href="#" th:href="@{/hello}">hello</a>
+	<a href="#" th:href="@{/hello(id=${name})}">hello</a>
+	<a href="#" th:href="@{/hello/{id}(id=${name})}">hello</a>
+	
+######6.3 表达式
+	
+	<p th:text="${name} == 'world'?100:1000">10</p>
+	<p th:text="${name} != 'world'?100:1000">10</p>
+	<p th:text="5 &gt; 6?100:1000">10</p>
+	<p th:text="5 &lt; 6?100:1000">10</p>
+	<p th:text="5 &gt;= 6?100:1000">10</p>
+	<p th:text="5 &lt;= 6?100:1000">10</p>
+
+######6.4 循环
+
+	<ul th:each="item: ${items}" th:unless="${#list.isEmpty(items)}">
+		<li th:text="${item}"></li>
+	</ul>
+
+######6.5 条件求值
+
+	<a href="#" th:if="${name} != null">显示</a>
+	<a href="#" th:unless="${name} == null">隐藏</a>
+	
+######6.6 切换
+
+	<div th:switch="${name}">
+		<p th:case='world'>Name is world</p>
+		<p th:case='spring'>Name is spring</p>
+		<p th:case='*'>Name is other</p>
+	</div>
+######6.7 时间格式化
+
+	<p><span th:text="${#dates.format(date, 'yyyy-MM-dd HH:mm:ss')}">2017-06-20 18:00:00</span></p>
+	<p><span th:text="${#dates.format(#dates.createToday(), 'yyyy-MM-dd HH:mm:ss')}">2017-06-20 18:00:00</span></p>
+	<p><span th:text="${#dates.format(#dates.createNow(), 'yyyy-MM-dd HH:mm:ss')}">2017-06-20 18:00:00</span></p>
+
+######6.8 数字格式化
+
+	<p><td th:text="${#numbers.formatDecimal(100.813213132131, 1, 2)}">0.99</td></p>
+	<p><td th:text="${#numbers.formatDecimal(10.0, 1, 2)}">0.99</td></p>
+
+#####7.构建war包
+######7.1 修改Application文件
+
+	@SpringBootApplication
+	public class Application extends SpringBootServletInitializer {
+	    @Override
+	    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+	        return application.sources(Application.class);
+	    }
+	
+	    public static void main(String[] args) throws Exception {
+	        SpringApplication.run(Application.class, args);
+	    }
+	}
+######7.2 修改pom.xml文件
+
+	<packaging>war</packaging>
+	
+	<dependencies>
+	    <dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-tomcat</artifactId>
+	        <scope>provided</scope>
+	    </dependency>
+	</dependencies>
 
 # 4.Example
 [https://github.com/mattmok/spring-cloud-example-parent/tree/master/spring-cloud-example-security](https://github.com/mattmok/spring-cloud-example-parent/tree/master/spring-cloud-example-security)
