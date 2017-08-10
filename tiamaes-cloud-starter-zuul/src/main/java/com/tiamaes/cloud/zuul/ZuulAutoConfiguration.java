@@ -19,7 +19,7 @@ import com.tiamaes.cloud.zuul.filter.HttpSessionZuulPreFilter;
 @Configuration
 @EnableZuulProxy
 @EnableConfigurationProperties(ZuulProperties.class)
-public class ZuulAutoConfiguration {
+public class ZuulAutoConfiguration{
 	private static Logger logger = LoggerFactory.getLogger(ZuulAutoConfiguration.class);
 	
 	@Configuration
@@ -34,5 +34,4 @@ public class ZuulAutoConfiguration {
 			return new HttpSessionZuulPreFilter(repository);
 	    }
 	}
-
 }

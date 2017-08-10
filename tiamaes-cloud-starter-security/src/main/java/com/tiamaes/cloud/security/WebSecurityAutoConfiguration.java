@@ -49,6 +49,8 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.util.Assert;
@@ -212,6 +214,16 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 		public AuthenticationFailureHandler failureHandler(){
 			return new SimpleUrlAuthenticationFailureHandler();
 		}
+		
+		@Bean
+		@ConditionalOnMissingBean(LogoutSuccessHandler.class)
+		public SimpleUrlLogoutSuccessHandler logoutSuccessHandler(){
+			SimpleUrlLogoutSuccessHandler urlLogoutHandler = new SimpleUrlLogoutSuccessHandler();
+			urlLogoutHandler.setDefaultTargetUrl("/login.html");
+			urlLogoutHandler.setTargetUrlParameter("redirectUrl");
+			urlLogoutHandler.setUseReferer(true);
+			return urlLogoutHandler;
+		}
 	}
 	
 	/**
@@ -242,6 +254,8 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 		private AuthenticationSuccessHandler successHandler;
 		@Autowired(required = false)
 		private AuthenticationFailureHandler failureHandler;
+		@Autowired(required = false)
+		public SimpleUrlLogoutSuccessHandler logoutSuccessHandler;
 
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
@@ -256,7 +270,7 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 			if (securityProperties.isEnableCsrf()) {
 				http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
 			} else {
-				http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).disable();
+				http.csrf().disable();
 			}
 
 			if (securityProperties instanceof SecurityProperties) {
@@ -272,7 +286,7 @@ public class WebSecurityAutoConfiguration implements InitializingBean {
 						.successHandler(successHandler)
 						.failureHandler(failureHandler)
 						.permitAll();
-					http.logout().logoutUrl("/logout").logoutSuccessUrl("/login.html").deleteCookies("SESSION", "JSESSIONID");
+					http.logout().logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler).deleteCookies("SESSION", "JSESSIONID");
 				}
 				//@formatter:on
 			}

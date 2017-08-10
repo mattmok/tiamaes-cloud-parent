@@ -21,6 +21,8 @@ public class User implements UserDetails, CredentialsContainer {
 	private String nickname;
 	private String password;
 	private String username;
+	private String mobile;
+	private String email;
 	private List<DefaultGrantedAuthority> authorities;
 	private boolean accountNonExpired = true;
 	private boolean accountNonLocked = true;
@@ -133,6 +135,24 @@ public class User implements UserDetails, CredentialsContainer {
 	@Override
 	public String getUsername() {
 		return username;
+	}
+
+	@Override
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+	@Override
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public void setEnabled(boolean enabled) {

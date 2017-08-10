@@ -57,4 +57,14 @@ public class MutableUser implements MutableUserDetails {
 	public boolean isEnabled() {
 		return delegate.isEnabled();
 	}
+
+	@Override
+	public String getMobile() {
+		return delegate.getMobile();
+	}
+
+	@Override
+	public String getEmail() {
+		return delegate.getEmail();
+	}
 }
