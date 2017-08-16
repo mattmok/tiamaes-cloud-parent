@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +16,6 @@ import org.springframework.session.data.redis.RedisOperationsSessionRepository;
 import com.tiamaes.cloud.zuul.filter.HttpSessionZuulPreFilter;
 
 @Configuration
-@EnableZuulProxy
 @EnableConfigurationProperties(ZuulProperties.class)
 public class ZuulAutoConfiguration{
 	private static Logger logger = LoggerFactory.getLogger(ZuulAutoConfiguration.class);

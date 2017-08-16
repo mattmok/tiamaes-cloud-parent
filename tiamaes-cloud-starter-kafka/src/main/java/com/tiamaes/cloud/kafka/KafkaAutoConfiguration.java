@@ -39,6 +39,7 @@ public class KafkaAutoConfiguration {
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
+		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
 		objectMapper.enableDefaultTyping(DefaultTyping.NON_FINAL, As.PROPERTY);
 		return objectMapper;
 	}
